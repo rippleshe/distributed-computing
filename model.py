@@ -273,6 +273,8 @@ def init_db(db_url: str = "sqlite:///data/distributed.db"):
     """
     初始化数据库连接，创建所有表（如果不存在）。
 
+
+
     参数:
         db_url: 数据库连接字符串
                 默认使用 SQLite 文件数据库，路径为 data/distributed.db
