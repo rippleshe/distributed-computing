@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分布式计算系统</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #eef2ff;
+            --success: #16a34a;
+            --success-light: #f0fdf4;
+            --warning: #d97706;
+            --warning-light: #fffbeb;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --purple: #7c3aed;
+            --purple-light: #f5f3ff;
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-hover: #f1f5f9;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+        .header { text-align: center; margin-bottom: 36px; }
+        .header h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .header p { color: var(--text-muted); font-size: 14px; }
+        .header .badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 14px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+        .stat-card .value { font-size: 28px; font-weight: 700; color: var(--primary); }
+        .stat-card .label { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+        }
+        .form-group .hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+        .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-danger { background: var(--danger); color: #fff; }
+        .btn-success:hover { filter: brightness(1.1); }
+        .btn-warning:hover { filter: brightness(1.1); }
+        .btn-danger:hover { filter: brightness(1.1); }
+
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--border);
+            background: var(--bg);
+        }
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        tr:hover td { background: var(--bg-hover); }
+
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-SPLITTING { background: #dbeafe; color: #1d4ed8; }
+        .status-IN_PROGRESS { background: #fef3c7; color: #b45309; }
+        .status-PAUSED { background: #ede9fe; color: #6d28d9; }
+        .status-COMPLETED { background: #dcfce7; color: #15803d; }
+        .status-FAILED { background: #fee2e2; color: #b91c1c; }
+
+        .progress {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 120px;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        .progress-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        .worker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .worker-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 16px;
+            transition: all 0.2s;
+        }
+        .worker-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); }
+        .worker-card .dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .worker-card .dot.online { background: var(--success); }
+        .worker-card .dot.busy { background: var(--warning); }
+        .worker-card .dot.offline { background: var(--danger); }
+        .worker-card h4 { font-size: 14px; margin-bottom: 6px; }
+        .worker-card p { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+        .result-box {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 400px;
+            overflow-y: auto;
+            color: var(--text);
+        }
+
+        .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+        .empty .text { font-size: 14px; }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        code {
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: "JetBrains Mono", "Fira Code", monospace;
+            color: var(--purple);
+        }
+
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>分布式计算系统</h1>
+            <p>仿照 Hadoop MapReduce 原理实现 · Python 版</p>
+            <span class="badge">Flask + SQLite + 动态类加载</span>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="value" id="statTotal">0</div><div class="label">总任务数</div></div>
+            <div class="stat-card"><div class="value" id="statRunning">0</div><div class="label">运行中</div></div>
+            <div class="stat-card"><div class="value" id="statCompleted">0</div><div class="label">已完成</div></div>
+            <div class="stat-card"><div class="value" id="statWorkers">0</div><div class="label">在线节点</div></div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">提交新任务</div>
+            <form id="taskForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input type="text" name="taskName" placeholder="例如：计算1到100的和" required>
+                    </div>
+                    <div class="form-group">
+                        <label>程序文件 (.py)</label>
+                        <input type="file" name="programFile" accept=".py" required>
+                        <div class="hint">系统会自动检测程序中的 Computable 子类，无需手动填写类名</div>
+                    </div>
+                    <div class="form-group">
+                        <label>数据文件 (可选)</label>
+                        <input type="file" name="dataFile">
+                        <div class="hint">如果任务需要处理文件数据，上传数据文件</div>
+                    </div>
+                    <div class="form-group">
+                        <label>输入参数 (可选)</label>
+                        <input type="text" name="inputData" placeholder="例如：1,100">
+                        <div class="hint">与数据文件二选一，纯计算任务填写参数</div>
+                    </div>
+                </div>
+                <div style="margin-top: 16px;">
+                    <button type="submit" class="btn btn-primary">提交任务</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <div class="card-title" style="margin-bottom:0">任务列表</div>
+                <button class="btn btn-ghost btn-sm" onclick="refreshTasks()">刷新</button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>名称</th><th>类名</th><th>状态</th><th>分片进度</th><th>进度</th><th>操作</th></tr>
+                    </thead>
+                    <tbody id="taskList">
+                        <tr><td colspan="7"><div class="empty"><div class="text">暂无任务，提交一个试试</div></div></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" id="resultCard" style="display:none">
+            <div class="toolbar">
+                <div class="card-title" style="margin-bottom:0">计算结果</div>
+                <button class="btn btn-primary btn-sm" id="downloadBtn" onclick="downloadResult()">下载结果</button>
+            </div>
+            <div class="result-box" id="resultContent"></div>
+        </div>
+
+        <div class="card">
+            <div class="toolbar">
+                <div class="card-title" style="margin-bottom:0">Worker 节点</div>
+                <button class="btn btn-ghost btn-sm" onclick="refreshWorkers()">刷新</button>
+            </div>
+            <div class="worker-grid" id="workerList">
+                <div class="empty" style="grid-column:1/-1"><div class="text">暂无 Worker 连接</div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+
+        document.getElementById('taskForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+            try {
+                const resp = await fetch(`${API}/api/tasks`, { method: 'POST', body: new FormData(e.target) });
+                const data = await resp.json();
+                if (data.code === 200) {
+                    alert('任务提交成功！ID: ' + data.data);
+                    e.target.reset();
+                    refreshTasks();
+                } else { alert('提交失败: ' + data.message); }
+            } catch (err) { alert('提交失败: ' + err.message); }
+            finally { btn.disabled = false; btn.textContent = '提交任务'; }
+        });
+
+        async function refreshTasks() {
+            try {
+                const resp = await fetch(`${API}/api/tasks`);
+                const tasks = await resp.json();
+                const tbody = document.getElementById('taskList');
+
+                document.getElementById('statTotal').textContent = tasks.length;
+                document.getElementById('statRunning').textContent = tasks.filter(t => ['SPLITTING','IN_PROGRESS','PAUSED'].includes(t.status)).length;
+                document.getElementById('statCompleted').textContent = tasks.filter(t => t.status === 'COMPLETED').length;
+
+                if (!tasks.length) {
+                    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="text">暂无任务，提交一个试试</div></div></td></tr>';
+                    return;
+                }
+                tbody.innerHTML = tasks.map(t => `
+                    <tr>
+                        <td style="font-weight:600">#${t.taskId}</td>
+                        <td>${t.taskName}</td>
+                        <td><code>${t.taskType}</code></td>
+                        <td><span class="status status-${t.status}">${t.status}</span></td>
+                        <td>${t.completedSlices} / ${t.totalSlices}</td>
+                        <td>
+                            <div class="progress"><div class="progress-bar" style="width:${t.progress}%"></div></div>
+                            <div class="progress-text">${t.progress}%</div>
+                        </td>
+                        <td>
+                            <div class="actions">
+                                ${t.status === 'IN_PROGRESS' ? `<button class="btn btn-sm btn-warning" onclick="pauseTask(${t.taskId})">暂停</button>` : ''}
+                                ${t.status === 'PAUSED' ? `<button class="btn btn-sm btn-success" onclick="resumeTask(${t.taskId})">恢复</button>` : ''}
+                                ${t.status === 'COMPLETED' ? `<button class="btn btn-sm btn-success" onclick="getResult(${t.taskId})">结果</button>` : ''}
+                                ${['COMPLETED','FAILED','PAUSED'].includes(t.status) ? `<button class="btn btn-sm btn-danger" onclick="deleteTask(${t.taskId})">删除</button>` : ''}
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) { console.error('刷新失败:', err); }
+        }
+
+        async function pauseTask(id) { await fetch(`${API}/api/tasks/${id}/pause`, { method: 'POST' }); refreshTasks(); }
+        async function resumeTask(id) { await fetch(`${API}/api/tasks/${id}/resume`, { method: 'POST' }); refreshTasks(); }
+        async function deleteTask(id) {
+            if (!confirm('确定删除此任务？')) return;
+            await fetch(`${API}/api/tasks/${id}`, { method: 'DELETE' });
+            document.getElementById('resultCard').style.display = 'none';
+            refreshTasks();
+        }
+        async function getResult(id) {
+            try {
+                const resp = await fetch(`${API}/api/tasks/${id}/result`);
+                const data = await resp.json();
+                if (data.code === 200) {
+                    document.getElementById('resultContent').textContent = data.data;
+                    document.getElementById('resultCard').style.display = 'block';
+                    document.getElementById('downloadBtn').setAttribute('data-task-id', id);
+                    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else { alert(data.message); }
+            } catch (err) { alert('获取失败: ' + err.message); }
+        }
+        async function downloadResult() {
+            const id = document.getElementById('downloadBtn').getAttribute('data-task-id');
+            if (!id) return;
+            window.open(`${API}/api/tasks/${id}/result/download`, '_blank');
+        }
+        async function refreshWorkers() {
+            try {
+                const resp = await fetch(`${API}/api/workers`);
+                const workers = await resp.json();
+                const div = document.getElementById('workerList');
+                document.getElementById('statWorkers').textContent = workers.filter(w => w.status !== 'OFFLINE').length;
+                if (!workers.length) {
+                    div.innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="text">暂无 Worker 连接</div></div>';
+                    return;
+                }
+                div.innerHTML = workers.map(w => `
+                    <div class="worker-card">
+                        <h4><span class="dot ${w.status.toLowerCase()}"></span>${w.nodeName}</h4>
+                        <p>状态: ${w.status}</p>
+                        ${w.currentTaskId ? `<p>正在处理: 任务 #${w.currentTaskId}</p>` : '<p>空闲中</p>'}
+                    </div>
+                `).join('');
+            } catch (err) { console.error('刷新失败:', err); }
+        }
+
+        refreshTasks();
+        refreshWorkers();
+        setInterval(refreshTasks, 2000);
+        setInterval(refreshWorkers, 5000);
+    </script>
+</body>
+</html>
