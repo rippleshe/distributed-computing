@@ -45,7 +45,7 @@ master.py — 主控节点（Master）
 
 启动方式：
     uv run python master.py
-    uv run python master.py --port 8080
+    uv run python     master.py --port 8080
 
 说明：
     Master 启动时会自动创建容错调度器的守护线程，
